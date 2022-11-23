@@ -1,0 +1,68 @@
+_mode=host
+pkgname=phosh
+pkgdesc="The phosh Shell"
+pkgver=0.21.1.r0.gc779ffa8
+pkgrel=2
+_arches=all
+arch=(
+    x86_64
+    aarch64
+)
+license=(GPL)
+url=https://gitlab.gnome.org/World/Phosh/phosh
+depends=(
+    gtk3
+    libhandy
+    gnome-desktop
+    gnome-session
+    gnome-shell
+    upower
+    libpulse
+    gcr
+    feedbackd
+    libnm
+    phoc
+    callaudiod
+    evolution-data-server
+)
+optdepends=(
+    "firefox-wayland-config: Use Wayland by default for Firefox"
+    "qt-wayland-config: Use Wayland by default for Qt apps"
+    "firefox-mobile-config: Firefox configuration optimized for mobile"
+    "qt-mobile-config: Qt conf.d entry to disable desktop window decorations"
+
+)
+makedepends=(
+    meson
+    ninja
+)
+_commit=c779ffa8ecf1a942a695bca4418b09c46bbe0d9f
+source=(
+    "git+$url#commit=$_commit"
+    pam_phosh
+    phosh.service
+)
+sha256sums=(
+    SKIP
+    43b94d0d9f4d083f028c77d18cb0d0f8037d160c41f333878c7cae3df0163c3d
+    a7cbe281d7e686d4068f93a636a548220731cd93e75e2023b0aa6b8e8fc7b751
+)
+
+pkgver() {
+    cd "$pkgname"
+    git describe --long "$_commit" | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+    arch-meson ${pkgname} output --libexecdir "lib/$pkgname" -Dtests=false -Dphoc_tests=disabled -Dsystemd=true
+    ninja -C output
+}
+
+package() {
+    DESTDIR="$pkgdir" ninja -C output install
+
+    install -Dm644 "$srcdir"/phosh.service \
+        "$pkgdir"/usr/lib/systemd/system/phosh.service
+    install -Dm644 "$srcdir"/pam_phosh \
+        "$pkgdir"/etc/pam.d/phosh
+}
