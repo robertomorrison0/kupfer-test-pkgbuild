@@ -1,0 +1,26 @@
+_mode=cross
+pkgname=firmware-sdm845-oneplus
+pkgver=0.2
+pkgrel=2
+_arches=specific
+arch=(aarch64)
+license=(custom:Proprietary)
+options=(!strip)
+source=(
+    "git+https://gitlab.com/sdm845-mainline/firmware-oneplus-sdm845.git#branch=prepackaged-release"
+)
+sha256sums=(
+    SKIP
+)
+
+build() {
+    cd "$srcdir"/firmware-oneplus-sdm845
+    mkdir -p usr
+    mv lib usr
+    cd usr/lib/firmware
+    mv postmarketos kupfer
+}
+
+package() {
+    cp -avf "$srcdir"/firmware-oneplus-sdm845/* "$pkgdir"/
+}
